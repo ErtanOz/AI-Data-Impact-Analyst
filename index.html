@@ -7,6 +7,25 @@
     <title>AI & Data Impact Analyst</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 20px rgba(59, 130, 246, 0.15)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         @media print {
             .no-print {
@@ -22,7 +41,13 @@
             }
 
             body {
-                background: white;
+                background: white !important;
+            }
+
+            header {
+                position: static !important;
+                background: white !important;
+                border: none !important;
             }
         }
 
@@ -30,19 +55,61 @@
             display: none;
         }
 
-        /* Smooth transitions */
+        /* Smooth transitions & Animations */
         .transition-all {
             transition-property: all;
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
             transition-duration: 300ms;
         }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+        }
     </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen pb-20 text-slate-900 font-sans">
+<body class="bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
+
+    <!-- Ambient Background Gradients -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div
+            class="absolute -top-[20%] -right-[10%] w-[800px] h-[800px] rounded-full bg-blue-100/40 blur-[100px] mix-blend-multiply">
+        </div>
+        <div
+            class="absolute top-[20%] -left-[10%] w-[600px] h-[600px] rounded-full bg-indigo-100/40 blur-[100px] mix-blend-multiply">
+        </div>
+        <div
+            class="absolute bottom-[0%] right-[20%] w-[500px] h-[500px] rounded-full bg-emerald-50/60 blur-[100px] mix-blend-multiply">
+        </div>
+    </div>
 
     <!-- App Container -->
-    <div id="app">
+    <div id="app" class="min-h-screen flex flex-col">
         <!-- Content will be rendered here by JS -->
     </div>
 
@@ -133,34 +200,35 @@
         ];
 
         const RANKING_CONFIG = {
-            TOP: { label: 'TOP', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', description: 'Mehrwert klar, skalieren.', min: 240 },
-            GOOD: { label: 'GUT', color: 'text-blue-700 bg-blue-50 border-blue-200', description: 'Weiterführen, Optimierung einplanen.', min: 180 },
-            CRITICAL: { label: 'KRITISCH', color: 'text-amber-700 bg-amber-50 border-amber-200', description: 'Nur weiter mit klarer Nachsteuerung.', min: 120 },
-            FAILED: { label: 'NICHT ERFOLGREICH', color: 'text-red-700 bg-red-50 border-red-200', description: 'Stoppen oder neu aufsetzen.', min: 0 },
+            TOP: { label: 'TOP', color: 'text-emerald-600 bg-emerald-50 border-emerald-200 ring-emerald-500/20', description: 'Hervorragendes Ergebnis. Der Mehrwert ist klar nachgewiesen. Empfehlung: Skalierung vorantreiben.', min: 240 },
+            GOOD: { label: 'GUT', color: 'text-blue-600 bg-blue-50 border-blue-200 ring-blue-500/20', description: 'Solides Ergebnis mit Potenzial. Die Anwendung ist wertstiftend. Empfehlung: Optimierungspunkte angehen.', min: 180 },
+            CRITICAL: { label: 'KRITISCH', color: 'text-amber-600 bg-amber-50 border-amber-200 ring-amber-500/20', description: 'Erhebliche Mängel identifiziert. Der Nutzen ist gefährdet. Empfehlung: Nur mit Auflagen weiterführen.', min: 120 },
+            FAILED: { label: 'NICHT ERFOLGREICH', color: 'text-red-600 bg-red-50 border-red-200 ring-red-500/20', description: 'Ziele nicht erreicht. Kritische Risiken bestehen. Empfehlung: Projekt stoppen oder neu aufsetzen.', min: 0 },
         };
 
-        const SCALE_LABELS = { 0: 'Nicht erfüllt', 1: 'Teilweise', 2: 'Erfüllt', 3: 'Übertroffen' };
+        const SCALE_LABELS = { 0: 'Nein', 1: 'Teils', 2: 'Ja', 3: 'Stark' };
 
         // --- Icons (SVG Paths) ---
         const ICONS = {
-            Printer: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>',
-            Download: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
-            RotateCcw: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"></path><path d="M3 3v9h9"></path></svg>',
-            Loader2: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>',
-            ChevronDown: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>',
-            ChevronUp: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>',
-            CheckCircle2: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
-            Circle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
-            XCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
-            AlertCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-            Star: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-            SmallStar: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+            Printer: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path></svg>',
+            Download: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+            RotateCcw: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"></path><path d="M3 3v9h9"></path></svg>',
+            Loader2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>',
+            ChevronDown: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>',
+            ChevronUp: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>',
+            CheckCircle2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+            Circle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
+            XCircle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+            AlertCircle: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+            Star: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            SmallStar: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            Info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>'
         };
 
         // --- State Management ---
         let appState = {
-            scores: {}, // mapped as {catId: {kpiId: val}}
-            openSectionId: 'c1', // or 'ALL' or null
+            scores: {},
+            openSectionId: 'c1',
             isPdfLoading: false,
         };
 
@@ -176,10 +244,9 @@
         // --- Helper Components & Rendering ---
 
         function renderIcon(name, customClass = "") {
-            // Simply replace width/height/class in string if needed, or just wrap in div
-            // A simple regex approach to inject class
             let svg = ICONS[name] || '';
             if (customClass) {
+                // Injects class into svg tag
                 svg = svg.replace('<svg ', `<svg class="${customClass}" `);
             }
             return svg;
@@ -200,50 +267,56 @@
             const x = cx + radius * Math.cos(toRad(endAngle));
             const y = cy + radius * Math.sin(toRad(endAngle));
 
-            // Color logic
-            let color = '#ef4444';
-            if (score >= 120) color = '#f59e0b';
-            if (score >= 180) color = '#3b82f6';
-            if (score >= 240) color = '#10b981';
+            // Dynamic Gradient Defs for Gauge
+            let strokeColor = '#ef4444'; // default red
+            let gradientId = 'grad_red';
 
-            const dObj = score === 0
-                ? `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx - radius + 0.01} ${cy}` // tiny dot if 0
+            // Refined Colors
+            if (score >= 120) { strokeColor = '#f59e0b'; gradientId = 'grad_amber'; }
+            if (score >= 180) { strokeColor = '#3b82f6'; gradientId = 'grad_blue'; }
+            if (score >= 240) { strokeColor = '#10b981'; gradientId = 'grad_emerald'; }
+
+            const dObj = score <= 0.5
+                ? `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx - radius + 0.01} ${cy}`
                 : `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${x} ${y}`;
 
             return `
-                <div class="relative h-48 w-full flex justify-center items-end overflow-hidden" aria-label="Gauge Chart">
-                    <svg viewBox="0 0 200 110" class="w-full h-full" overflow="visible">
+                <div class="relative h-48 w-60 mx-auto flex justify-center items-end overflow-hidden select-none" aria-label="Gauge Chart">
+                    <svg viewBox="0 0 200 110" class="w-full h-full drop-shadow-lg" overflow="visible">
+                        <defs>
+                            <linearGradient id="gradText" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#1e293b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
                         <!-- Background Arc -->
-                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="30" />
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#f1f5f9" stroke-width="25" stroke-linecap="round" />
                         <!-- Value Arc -->
-                        <path d="${dObj}" fill="none" stroke="${color}" stroke-width="30" />
+                        <path d="${dObj}" fill="none" stroke="${strokeColor}" stroke-width="25" stroke-linecap="round" class="transition-all duration-700 ease-out" />
                     </svg>
-                    <div class="absolute bottom-0 text-center pb-4 flex flex-col items-center">
-                        <span class="text-4xl font-bold text-slate-800">${Math.round(score)}</span>
-                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Gesamtpunkte</span>
-                        <span class="text-xs text-slate-400">von ${max}</span>
+                    <div class="absolute bottom-0 text-center pb-2 flex flex-col items-center z-10">
+                        <span class="text-5xl font-extrabold tracking-tighter text-slate-800 tabular-nums leading-none mb-1">${Math.round(score)}</span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-white/80 px-2 py-0.5 rounded-full backdrop-blur-sm border border-slate-100">Score / ${max}</span>
                     </div>
                 </div>
             `;
         }
 
         function renderRadarChart(categoryScores) {
-            // SVG Radar Chart
-            // 7 Axes
-            const size = 200;
+            const size = 220;
             const center = size / 2;
-            const radius = 70;
+            const radius = 80;
 
-            // Calculate points
             const points = categoryScores.map((cat, i) => {
-                const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2; // start top
-                const val = cat.percentage / 100;
-                const x = center + radius * val * Math.cos(angle);
-                const y = center + radius * val * Math.sin(angle);
+                const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2;
+                const val = (cat.percentage || 0) / 100;
+                // Add tiny offset if 0 to avoid rendering glitch
+                const r = radius * Math.max(val, 0.01);
+                const x = center + r * Math.cos(angle);
+                const y = center + r * Math.sin(angle);
                 return `${x},${y}`;
             }).join(' ');
 
-            // Calculate grid (web)
             const gridLevels = [1, 0.75, 0.5, 0.25];
             const grids = gridLevels.map(level => {
                 const pts = Array.from({ length: 7 }).map((_, i) => {
@@ -253,24 +326,27 @@
                     const y = center + r * Math.sin(angle);
                     return `${x},${y}`;
                 }).join(' ');
-                return `<polygon points="${pts}" fill="none" stroke="#e2e8f0" stroke-width="1" />`;
+                return `<polygon points="${pts}" fill="none" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2 2" />`;
             }).join('');
 
-            // Labels
+            // Labels positioned further out
             const labels = categoryScores.map((cat, i) => {
                 const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2;
-                const r = radius + 20; // push label out
+                const r = radius + 25;
                 const x = center + r * Math.cos(angle);
                 const y = center + r * Math.sin(angle);
                 const anchor = x < center ? 'end' : (x > center ? 'start' : 'middle');
-                return `<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#64748b" font-size="8">${cat.id.replace('c', '')}</text>`;
+                return `
+                    <text x="${x}" y="${y}" text-anchor="${anchor}" fill="#64748b" font-size="9" font-weight="600" style="text-transform: uppercase;">
+                        ${cat.id.replace('c', 'Dim ')}
+                    </text>`;
             }).join('');
 
             return `
-                <div class="h-64 w-full flex justify-center items-center">
-                    <svg viewBox="0 0 ${size} ${size}" class="w-full h-full max-w-[250px]">
+                <div class="h-60 w-full flex justify-center items-center select-none">
+                    <svg viewBox="0 0 ${size} ${size}" class="w-full h-full max-w-[280px] drop-shadow-sm overflow-visible">
                         ${grids}
-                        <polygon points="${points}" fill="#3b82f6" fill-opacity="0.6" stroke="#2563eb" stroke-width="2" />
+                        <polygon points="${points}" fill="rgba(59, 130, 246, 0.4)" stroke="#3b82f6" stroke-width="2" vector-effect="non-scaling-stroke" class="transition-all duration-500 ease-out" />
                         ${labels}
                     </svg>
                 </div>
@@ -278,84 +354,106 @@
         }
 
         function renderBarChart(kpis, scores, catId) {
-            // Simple HTML/CSS bars
             const bars = kpis.map(kpi => {
                 const val = scores[catId]?.[kpi.id] || 0;
-                let colorClass = 'bg-red-500';
-                if (val === 1) colorClass = 'bg-amber-500';
-                if (val === 2) colorClass = 'bg-emerald-500';
-                if (val === 3) colorClass = 'bg-blue-500';
+                let bgClass = 'bg-slate-200';
+                if (val === 1) bgClass = 'bg-amber-400';
+                if (val === 2) bgClass = 'bg-blue-500';
+                if (val === 3) bgClass = 'bg-emerald-500';
+                if (val === 0) bgClass = 'bg-red-400/50';
 
-                const heightPct = (val / 3) * 100;
+                // Height based on 0-3 scale. We use min height for visibility if 0
+                const heightPct = Math.max((val / 3) * 100, 10);
 
                 return `
-                    <div class="flex flex-col items-center group relative cursor-help" style="width: 14%;">
-                        <div class="w-full bg-slate-100 rounded-t-sm relative h-32 flex items-end">
-                             <div style="height: ${heightPct}%;" class="w-full ${colorClass} rounded-t-sm transition-all"></div>
+                    <div class="flex flex-col items-center group relative cursor-help flex-1 mx-1">
+                        <!-- Bar Container -->
+                        <div class="w-full bg-slate-50/50 rounded-lg relative h-24 flex items-end overflow-hidden ring-1 ring-slate-100">
+                             <div style="height: ${heightPct}%;" class="w-full ${bgClass} rounded-t-sm transition-all duration-500 relative">
+                                <!-- Shine effect -->
+                                <div class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent"></div>
+                             </div>
                         </div>
-                        <span class="text-xs text-slate-500 mt-1 truncate w-full text-center">${kpi.id}</span>
-                        <!-- Tooltip -->
-                        <div class="absolute bottom-full mb-2 hidden group-hover:block z-20 w-48 bg-slate-800 text-white text-xs p-2 rounded shadow-xl">
-                            <p class="font-bold mb-1">${kpi.id}</p>
-                            <p class="mb-1">${kpi.text}</p>
-                            <p>Score: ${val}</p>
+                        <span class="text-[10px] uppercase font-bold text-slate-400 mt-2 truncate w-full text-center tracking-wider">${kpi.id}</span>
+                        
+                        <!-- Premium Tooltip -->
+                        <div class="absolute bottom-full mb-3 hidden group-hover:block z-20 w-56 glass-dark text-white text-xs p-3 rounded-xl shadow-xl border border-slate-700 pointer-events-none animate-fade-in">
+                            <div class="flex items-center justify-between mb-1 border-b border-slate-700/50 pb-1">
+                                <span class="font-bold text-slate-200">KPI ${kpi.id}</span>
+                                <span class="font-mono text-blue-300 font-bold">${val}/3</span>
+                            </div>
+                            <p class="text-slate-300 leading-snug">${kpi.text}</p>
                         </div>
                     </div>
                 `;
             }).join('');
 
-            return `<div class="flex items-end justify-between h-40 w-full px-2">${bars}</div>`;
+            return `<div class="flex items-end justify-between h-32 w-full px-2 mt-2">${bars}</div>`;
         }
 
         // --- Core Application Components ---
 
         function renderKPIRow(kpi, value, catId) {
-            // Config for feedback
-            let iconKey = 'Circle';
-            let color = 'text-slate-400';
-            let bg = 'bg-slate-50';
-            let border = 'border-slate-200';
+            // Visual config
+            let iconColor = 'text-slate-300';
+            let activeClass = 'bg-slate-100 text-slate-500 shadow-inner';
 
-            if (value === 0) { iconKey = 'XCircle'; color = 'text-red-700'; bg = 'bg-red-50'; border = 'border-red-200'; }
-            if (value === 1) { iconKey = 'AlertCircle'; color = 'text-amber-700'; bg = 'bg-amber-50'; border = 'border-amber-200'; }
-            if (value === 2) { iconKey = 'CheckCircle2'; color = 'text-emerald-700'; bg = 'bg-emerald-50'; border = 'border-emerald-200'; }
-            if (value === 3) { iconKey = 'Star'; color = 'text-blue-700'; bg = 'bg-blue-50'; border = 'border-blue-200'; }
+            if (value > 0) {
+                if (value === 1) iconColor = 'text-amber-500';
+                if (value === 2) iconColor = 'text-blue-500';
+                if (value === 3) iconColor = 'text-emerald-500';
+            }
 
-            // Score Buttons HTML
+            // Segmented Control for Scores
             const buttonsHtml = [0, 1, 2, 3].map(score => {
                 const isActive = value === score;
-                const activeClass = isActive
-                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-black/5 font-bold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50';
+                // Modern segmented control style
+                let btnClass = isActive
+                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200 font-bold scale-100 z-10'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50';
+
+                // Color coding active state further
+                if (isActive) {
+                    if (score === 0) btnClass = 'bg-white text-red-500 shadow-sm ring-1 ring-red-100 font-bold z-10';
+                    if (score === 1) btnClass = 'bg-white text-amber-500 shadow-sm ring-1 ring-amber-100 font-bold z-10';
+                    if (score === 2) btnClass = 'bg-white text-blue-600 shadow-sm ring-1 ring-blue-100 font-bold z-10';
+                    if (score === 3) btnClass = 'bg-white text-emerald-600 shadow-sm ring-1 ring-emerald-100 font-bold z-10';
+                }
 
                 return `
                     <button 
                         onclick="actions.setScore('${catId}', '${kpi.id}', ${score})"
-                        class="w-10 h-9 rounded-md text-sm font-medium transition-all ${activeClass}"
+                        class="h-8 w-10 flex items-center justify-center text-sm rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 relative ${btnClass}"
                         title="${SCALE_LABELS[score]}">
                         ${score}
                     </button>
                 `;
             }).join('');
 
+            // Status Indicator Dot with Pulse if Max Logic
+            let statusDot = `<div class="w-2 h-2 rounded-full bg-slate-200 ring-4 ring-slate-50"></div>`;
+            if (value === 3) statusDot = `<div class="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>`;
+            else if (value === 0) statusDot = `<div class="w-2 h-2 rounded-full bg-red-400 ring-4 ring-red-50"></div>`;
+            else if (value === 1) statusDot = `<div class="w-2 h-2 rounded-full bg-amber-400 ring-4 ring-amber-50"></div>`;
+            else if (value === 2) statusDot = `<div class="w-2 h-2 rounded-full bg-blue-500 ring-4 ring-blue-50"></div>`;
+
             return `
-            <div class="py-3 border-b border-slate-100 last:border-0 print:border-slate-200">
+            <div class="py-4 border-b border-slate-100/50 last:border-0 hover:bg-slate-50/50 transition-colors -mx-5 px-5 group">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="flex-1 flex gap-3 items-start">
-                  <div class="${color} w-5 h-5 mt-0.5 shrink-0">${renderIcon(iconKey)}</div>
+                <div class="flex-1 flex gap-4 items-start">
+                  <div class="mt-2 shrink-0 transition-all duration-300 group-hover:scale-110">${statusDot}</div>
                   <div>
-                    <p class="text-slate-800 text-sm md:text-base font-medium">${kpi.text}</p>
-                    <div class="mt-2 flex">
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${bg} ${color} ${border}">
-                         ${renderIcon(iconKey === 'Star' ? 'SmallStar' : iconKey, 'w-3.5 h-3.5')}
-                         ${SCALE_LABELS[value]}
-                      </span>
+                    <p class="text-slate-700 text-[15px] font-medium leading-relaxed group-hover:text-slate-900 transition-colors">${kpi.text}</p>
+                    <div class="mt-1 flex items-center gap-2 md:hidden">
+                         <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">${SCALE_LABELS[value]}</span>
                     </div>
                   </div>
                 </div>
-                <div class="flex bg-slate-100 print:bg-transparent p-1 rounded-lg shrink-0 self-start md:self-center ml-8 md:ml-0 no-print" data-html2canvas-ignore="true">
+                
+                <div class="flex bg-slate-100/80 p-1 rounded-lg shrink-0 self-start md:self-center ml-0 md:ml-4 no-print shadow-inner" data-html2canvas-ignore="true">
                    ${buttonsHtml}
                 </div>
+                
                 <!-- Print Value -->
                 <div class="hidden print:block pdf-show-block text-sm font-bold border px-3 py-1 rounded bg-slate-50 min-w-[3rem] text-center shrink-0 self-center">
                    ${value}
@@ -370,35 +468,53 @@
             const answeredCount = cat.kpis.reduce((acc, kpi) => acc + (kpiScores[kpi.id] !== undefined ? 1 : 0), 0);
             const isComplete = answeredCount === cat.kpis.length;
 
+            // Header Logic
             const headerIcon = isComplete
-                ? `<div class="text-emerald-500">${renderIcon('CheckCircle2', 'w-6 h-6')}</div>`
-                : `<div class="relative"><div class="text-slate-300">${renderIcon('Circle', 'w-6 h-6')}</div>${answeredCount > 0 ? `<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-500">${answeredCount}</span>` : ''}</div>`;
+                ? `<div class="text-emerald-500 relative shadow-green-200 drop-shadow-md rounded-full bg-white">${renderIcon('CheckCircle2', 'w-7 h-7')}</div>`
+                : `<div class="relative w-7 h-7 flex items-center justify-center">
+                        <div class="text-slate-200">${renderIcon('Circle', 'w-full h-full')}</div>
+                        ${answeredCount > 0 ? `<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-500">${answeredCount}</span>` : ''}
+                   </div>`;
 
-            const chevron = isOpen ? renderIcon('ChevronUp', 'w-5 h-5') : renderIcon('ChevronDown', 'w-5 h-5');
+            const chevron = isOpen
+                ? `<div class="bg-blue-50 text-blue-600 p-1 rounded-full transition-colors">${renderIcon('ChevronUp', 'w-5 h-5')}</div>`
+                : `<div class="text-slate-400 group-hover:text-slate-600 transition-colors">${renderIcon('ChevronDown', 'w-5 h-5')}</div>`;
+
             const contentDisplay = isOpen ? '' : 'hidden';
 
             const kpisHtml = cat.kpis.map(kpi => renderKPIRow(kpi, kpiScores[kpi.id] || 0, cat.id)).join('');
 
+            // Active border style
+            const containerClass = isOpen
+                ? 'shadow-lg border-blue-500/30 ring-1 ring-blue-500/10'
+                : 'shadow-soft hover:shadow-lg border-white/60 hover:border-blue-200/50';
+
             return `
-            <div class="border border-slate-200 rounded-xl bg-white shadow-sm mb-4 print:mb-6 print:border-slate-300 print:shadow-none print-break-inside-avoid">
-                <button onclick="actions.toggleSection('${cat.id}')" class="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 transition-colors text-left rounded-t-xl print:bg-slate-100" data-html2canvas-ignore="true">
-                    <div class="flex items-center gap-3">
-                        ${headerIcon}
+            <div class="glass rounded-2xl mb-5 transition-all duration-300 border ${containerClass} print:shadow-none print:border-slate-300 print-break-inside-avoid overflow-hidden">
+                <button onclick="actions.toggleSection('${cat.id}')" class="w-full flex items-center justify-between p-5 md:p-6 bg-white/50 hover:bg-white/80 transition-all text-left group" data-html2canvas-ignore="true">
+                    <div class="flex items-center gap-4">
+                        <div class="shrink-0 transition-transform duration-300 group-hover:scale-105">${headerIcon}</div>
                         <div>
-                            <h3 class="font-semibold text-slate-800 text-lg">${cat.title}</h3>
-                            <p class="text-sm text-slate-600">Gewichtung: ${cat.weight}%</p>
+                            <h3 class="font-bold text-slate-800 text-lg tracking-tight group-hover:text-blue-700 transition-colors">${cat.title}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Gewicht ${cat.weight}%</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-slate-400 no-print">${chevron}</div>
+                    <div class="pl-4 no-print opacity-80 group-hover:opacity-100">${chevron}</div>
                 </button>
                 
-                <div class="${contentDisplay} p-5 border-t border-slate-100 print:border-slate-200 print:block">
-                    <div class="space-y-6 print:space-y-4">
+                <div class="${contentDisplay} px-5 pb-5 md:px-6 md:pb-6 border-t border-slate-100 bg-white/40 print:block">
+                    <div class="pt-2">
                         ${kpisHtml}
                     </div>
                     <!-- Chart Section -->
-                    <div class="mt-8 pt-6 border-t border-slate-100 print:break-inside-avoid">
-                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Score Übersicht</h4>
+                    <div class="mt-6 pt-6 border-t border-slate-200/60 print:break-inside-avoid">
+                         <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                ${renderIcon('Info', 'w-3 h-3')} Score Analyse
+                            </h4>
+                         </div>
                          ${renderBarChart(cat.kpis, scores, cat.id)}
                     </div>
                 </div>
@@ -453,29 +569,26 @@
             <section class="hidden print:block pdf-show-block mt-8 print-break-inside-avoid">
                  <div class="p-6 bg-white border border-slate-200 rounded-xl">
                     <h2 class="text-xl font-bold mb-4 text-slate-800">Ergebnis Details</h2>
-                    <table class="w-full text-sm text-left">
+                    <table class="w-full text-sm text-left border-collapse">
                       <thead>
-                        <tr class="border-b border-slate-300">
-                          <th class="py-2 font-semibold text-slate-800">Bereich</th>
-                          <th class="py-2 text-right font-semibold text-slate-800">Gewicht</th>
-                          <th class="py-2 text-right font-semibold text-slate-800">Score</th>
-                          <th class="py-2 text-right font-semibold text-slate-800">Max</th>
+                        <tr class="border-b-2 border-slate-800">
+                          <th class="py-2 font-bold text-slate-900 uppercase tracking-wide text-xs">Bereich</th>
+                          <th class="py-2 text-right font-bold text-slate-900 uppercase tracking-wide text-xs">Gewicht</th>
+                          <th class="py-2 text-right font-bold text-slate-900 uppercase tracking-wide text-xs">Score</th>
                         </tr>
                       </thead>
                       <tbody>
                         ${result.categoryScores.map(c => `
                           <tr class="border-b border-slate-100">
-                            <td class="py-2 text-slate-800">${c.title}</td>
-                            <td class="py-2 text-right text-slate-700">${CATEGORIES.find(cat => cat.id === c.id)?.weight}%</td>
-                            <td class="py-2 text-right font-mono font-medium text-slate-900">${c.score.toFixed(1)}</td>
-                            <td class="py-2 text-right text-slate-500 font-mono">${c.maxPotential}</td>
+                            <td class="py-3 text-slate-800 font-medium">${c.title}</td>
+                            <td class="py-3 text-right text-slate-500">${CATEGORIES.find(cat => cat.id === c.id)?.weight}%</td>
+                            <td class="py-3 text-right font-mono font-bold text-slate-900">${c.score.toFixed(1)}</td>
                           </tr>
                         `).join('')}
-                        <tr class="font-bold border-t border-slate-300 bg-slate-50">
-                          <td class="py-3 pl-2 text-slate-900">Gesamt</td>
-                          <td class="py-3 text-right">100%</td>
-                          <td class="py-3 text-right text-blue-700">${result.totalScore.toFixed(1)}</td>
-                          <td class="py-3 text-right pr-2 text-slate-900">300</td>
+                        <tr class="bg-slate-50 border-t-2 border-slate-200">
+                          <td class="py-4 pl-2 text-slate-900 font-bold text-lg">Gesamtbewertung</td>
+                          <td class="py-4 text-right font-bold text-slate-500">100%</td>
+                          <td class="py-4 text-right text-blue-700 font-extrabold text-xl">${result.totalScore.toFixed(1)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -484,66 +597,103 @@
             `;
 
             root.innerHTML = `
-              <div id="report-content">
-                <!-- Header -->
-                <header class="bg-slate-900 text-white pt-10 pb-24 px-4 shadow-lg print:shadow-none print:pb-6 print:pt-6 print:bg-white print:text-black">
-                  <div class="max-w-4xl mx-auto">
-                    <div class="flex justify-between items-start">
-                      <div>
-                        <h1 class="text-3xl font-bold mb-2">AI & Data Impact Analyst</h1>
-                        <p class="text-slate-300 print:text-slate-600 max-w-xl text-base">
-                          Professionelles Bewertungstool für KI- und Datenprojekte. 
-                          Evaluieren Sie Erfolg anhand von Datenqualität, KI-Ethik, Effizienz und operativem Nutzen.
-                        </p>
+              <div id="report-content" class="w-full">
+                <!-- Modern Sticky Header -->
+                <header class="sticky top-0 z-40 w-full glass bg-white/80 border-b border-white/20 print:static print:bg-white print:border-none">
+                  <div class="max-w-5xl mx-auto px-4 py-4 md:py-5 flex justify-between items-center">
+                      <div class="flex items-center gap-3">
+                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                            <!-- Logo Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5 10 10 0 0 0-10 10a10 10 0 0 0 10 10 10 10 0 0 0 10-10z"/></svg>
+                         </div>
+                         <div>
+                            <h1 class="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 leading-tight">
+                                AI & Data Impact Analyst
+                            </h1>
+                            <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400">Professional Evaluation Tool</p>
+                         </div>
                       </div>
                       
                       <!-- Actions -->
                       <div class="flex gap-2 no-print" data-html2canvas-ignore="true">
-                        <button onclick="actions.reset()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors" title="Reset">
-                           ${renderIcon('RotateCcw', 'w-5 h-5')} <span class="hidden sm:inline">Reset</span>
+                        <button onclick="actions.reset()" class="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100/50 rounded-full transition-all" title="Reset">
+                           ${renderIcon('RotateCcw', 'w-4 h-4')} Reset
                         </button>
-                        <button onclick="actions.print()" class="p-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors" title="Drucken">
+                        <div class="h-8 w-px bg-slate-200 mx-1 hidden md:block"></div>
+                        <button onclick="actions.print()" class="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:shadow-md rounded-full transition-all" title="Drucken">
                            ${renderIcon('Printer', 'w-5 h-5')}
                         </button>
-                        <button onclick="actions.downloadPDF()" id="btn-pdf" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white transition-colors" title="PDF">
-                           ${appState.isPdfLoading ? renderIcon('Loader2', 'w-5 h-5') : renderIcon('Download', 'w-5 h-5')}
-                           <span class="hidden sm:inline">PDF Speichern</span>
+                        <button onclick="actions.downloadPDF()" id="btn-pdf" class="flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-full shadow-lg hover:shadow-xl shadow-slate-900/20 active:scale-95 transition-all w-fit" title="PDF Export">
+                           ${appState.isPdfLoading ? renderIcon('Loader2', 'w-4 h-4') : renderIcon('Download', 'w-4 h-4')}
+                           <span class="hidden sm:inline">Export PDF</span>
                         </button>
                       </div>
-                    </div>
                   </div>
                 </header>
 
-                <main class="max-w-4xl mx-auto px-4 -mt-16 space-y-8" role="main">
+                <main class="max-w-5xl mx-auto px-4 py-8 space-y-8 animate-fade-in" role="main">
+                  
+                  <!-- Intro Text (Print Only or nicely integrated) -->
+                  <div class="text-center max-w-2xl mx-auto mb-8 hidden lg:block print:block">
+                     <p class="text-slate-500 font-medium">Evaluieren Sie Erfolg anhand von Datenqualität, KI-Ethik, Effizienz und operativem Nutzen mit standardisierten Metriken.</p>
+                  </div>
+
                   <!-- Dashboard Card -->
-                  <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 flex flex-col md:flex-row gap-8 items-center justify-between print:shadow-none print:border-2 print:border-slate-800 print-break-inside-avoid">
-                      <!-- Gauge -->
-                      <div class="w-full md:w-1/3 flex flex-col items-center">
-                         ${renderGaugeChart(result.totalScore, result.maxScore)}
-                         <div class="mt-4 px-4 py-2 rounded-full border text-sm font-bold tracking-wide ${rankingInfo.color}">
-                           ${rankingInfo.label}
-                         </div>
-                      </div>
+                  <section class="glass rounded-3xl p-1 bg-white/40 ring-1 ring-white/60 shadow-xl print:shadow-none print:border print:border-slate-300 print-break-inside-avoid">
+                      <div class="bg-gradient-to-b from-white/80 to-white/40 rounded-[20px] p-6 md:p-10 border border-white/50">
+                          <div class="flex flex-col lg:flex-row gap-10 items-center justify-between">
+                              
+                            <!-- Gauge Wrapper -->
+                            <div class="w-full lg:w-1/3 flex flex-col items-center relative">
+                                <!-- Decorative BG glow -->
+                                <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/5 to-purple-500/5 blur-3xl rounded-full -z-10"></div>
+                                ${renderGaugeChart(result.totalScore, result.maxScore)}
+                            </div>
 
-                      <!-- Text -->
-                      <div class="w-full md:w-1/3 text-center md:text-left">
-                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Bewertung</h3>
-                        <p class="text-xl font-medium text-slate-800 mb-2">${result.totalScore.toFixed(1)} / 300 Punkte</p>
-                        <p class="text-slate-700 leading-relaxed text-sm">${rankingInfo.description}</p>
-                      </div>
+                            <!-- Ranking & Feedback -->
+                            <div class="w-full lg:w-1/3 text-center">
+                                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-100 shadow-sm mb-4">
+                                    <span class="w-2 h-2 rounded-full ${rankingInfo.color.split(' ')[0].replace('text-', 'bg-')} animation-pulse"></span>
+                                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status Bewertung</span>
+                                </div>
+                                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-3 tracking-tight">${rankingInfo.label}</h2>
+                                <div class="p-4 rounded-xl ${rankingInfo.color} border shadow-sm">
+                                    <p class="font-medium leading-relaxed">${rankingInfo.description}</p>
+                                </div>
+                            </div>
 
-                      <!-- Radar -->
-                      <div class="w-full md:w-1/3 flex flex-col items-center">
-                         ${renderRadarChart(result.categoryScores)}
-                         <p class="text-xs text-slate-500 mt-2">Dimensions-Balance</p>
+                            <!-- Radar Wrapper -->
+                            <div class="w-full lg:w-1/3 flex flex-col items-center">
+                                ${renderRadarChart(result.categoryScores)}
+                                <div class="flex gap-4 mt-2 justify-center">
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-2 h-2 rounded-sm bg-blue-500/60"></div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase">Ist</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-2 h-2 rounded-sm border border-slate-300 border-dashed"></div>
+                                        <span class="text-[10px] font-bold text-slate-400 uppercase">Ziel</span>
+                                    </div>
+                                </div>
+                            </div>
+                          </div>
                       </div>
                   </section>
 
                   <!-- Checklist -->
-                  <section class="space-y-4 print:space-y-8">
-                      <div class="flex items-center justify-between no-print" data-html2canvas-ignore="true">
-                          <h2 class="text-xl font-bold text-slate-800">Checkliste</h2>
-                          <span class="text-sm text-slate-600">Skala: 0 (Nicht erfüllt) bis 3 (Übertroffen)</span>
+                  <section class="space-y-6 print:space-y-6">
+                      <div class="flex items-end justify-between px-2 no-print" data-html2canvas-ignore="true">
+                          <div>
+                            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Analyse-Checkliste</h2>
+                            <p class="text-slate-500 text-sm font-medium mt-1">7 Dimensionen der erfolgreichen Umsetzung</p>
+                          </div>
+                          <!-- Legend -->
+                          <div class="hidden sm:flex gap-3 text-[10px] font-bold uppercase text-slate-400">
+                             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-200"></span> 0 Nein</span>
+                             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> 1 Teils</span>
+                             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> 2 Ja</span>
+                             <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> 3 Stark</span>
+                          </div>
                       </div>
                       ${categoriesHtml}
                   </section>
@@ -552,18 +702,20 @@
                 </main>
 
                 <!-- Footer -->
-                <footer class="max-w-4xl mx-auto px-4 py-12 text-center text-slate-500 text-sm print:py-6">
-                    <p>&copy; ${new Date().getFullYear()} Created by AI, Ertan Özcan</p>
+                <footer class="max-w-5xl mx-auto px-4 py-12 text-center text-slate-400 text-xs font-semibold uppercase tracking-widest print:py-6">
+                    <p class="hover:text-slate-600 transition-colors cursor-default">
+                        @ 2026 Created by AI, Ertan Özcan, <a href="https://digitalheritagelab.com" target="_blank" class="hover:underline">https://digitalheritagelab.com</a>
+                    </p>
                 </footer>
               </div>
 
               <!-- Mobile Sticky Footer -->
-              <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-lg z-50 flex justify-between items-center no-print" data-html2canvas-ignore="true">
+              <div class="md:hidden fixed bottom-4 left-4 right-4 glass-dark rounded-2xl p-4 shadow-2xl z-50 flex justify-between items-center no-print border border-slate-700/50" data-html2canvas-ignore="true">
                   <div>
-                    <span class="text-xs text-slate-600 block">Gesamtpunkte</span>
-                    <span class="font-bold text-lg text-slate-900">${Math.round(result.totalScore)} <span class="text-slate-500 text-sm">/ 300</span></span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-0.5">Score</span>
+                    <span class="font-bold text-xl text-white tracking-tight">${Math.round(result.totalScore)} <span class="text-slate-500 text-sm font-medium">/ 300</span></span>
                   </div>
-                   <div class="px-3 py-1 rounded-full text-xs font-bold ${rankingInfo.color}">
+                   <div class="px-4 py-1.5 rounded-full text-xs font-bold ${rankingInfo.color} border-none shadow-glow">
                       ${rankingInfo.label}
                    </div>
               </div>
@@ -577,11 +729,7 @@
                 render();
             },
             toggleSection: (catId) => {
-                if (appState.openSectionId === catId) {
-                    appState.openSectionId = null;
-                } else {
-                    appState.openSectionId = catId;
-                }
+                appState.openSectionId = appState.openSectionId === catId ? null : catId;
                 render();
             },
             reset: () => {
@@ -607,12 +755,15 @@
                 appState.openSectionId = 'ALL';
                 render();
 
+                // Small delay to ensure render is complete
+                await new Promise(resolve => setTimeout(resolve, 800));
+
                 const element = document.getElementById('report-content');
                 const opt = {
-                    margin: [10, 10, 15, 10],
-                    filename: `AI-Data-Impact-Report-${new Date().toISOString().split('T')[0]}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    margin: [10, 10, 10, 10],
+                    filename: `Impact-Report-${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: { type: 'jpeg', quality: 0.99 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
@@ -621,7 +772,7 @@
                     await html2pdf().set(opt).from(element).save();
                 } catch (e) {
                     console.error(e);
-                    alert('Fehler beim PDF.');
+                    alert('PDF Fehler. Bitte Drucken-Funktion nutzen > Als PDF speichern.');
                 } finally {
                     appState.isPdfLoading = false;
                     appState.openSectionId = prev;
@@ -630,7 +781,7 @@
             }
         };
 
-        // Expose to global scope for inline event handlers
+        // Expose to global scope
         window.actions = actions;
 
         // Initial Render
