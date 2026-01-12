@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & Data Impact Analyst</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            .print-break-inside-avoid {
+                break-inside: avoid;
+            }
+
+            .pdf-show-block {
+                display: block !important;
+            }
+
+            body {
+                background: white;
+            }
+        }
+
+        .pdf-show-block {
+            display: none;
+        }
+
+        /* Smooth transitions */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 300ms;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 min-h-screen pb-20 text-slate-900 font-sans">
+
+    <!-- App Container -->
+    <div id="app">
+        <!-- Content will be rendered here by JS -->
+    </div>
+
+    <!-- Script: Constants & Logic -->
+    <script>
+        // --- Constants (Replacing constants.ts) ---
+        const CATEGORIES = [
+            {
+                id: 'c1',
+                title: '1. Zielerreichung und strategischer Fit',
+                weight: 15,
+                kpis: [
+                    { id: '1.1', text: 'Zielbild war klar, messbar, schriftlich vorhanden' },
+                    { id: '1.2', text: 'Problemdefinition fachlich, nicht technisch, war sauber' },
+                    { id: '1.3', text: 'Zielkennzahlen wurden erreicht' },
+                    { id: '1.4', text: 'Nutzen war vor Go Live validiert, Pilot oder Test' },
+                    { id: '1.5', text: 'Abweichungen sind dokumentiert und begründet' },
+                ],
+            },
+            {
+                id: 'c2',
+                title: '2. Operative Effizienz und Wirtschaftlichkeit',
+                weight: 20,
+                kpis: [
+                    { id: '2.1', text: 'Bearbeitungszeit pro Vorgang sank' },
+                    { id: '2.2', text: 'Manuelle Tätigkeiten gingen zurück' },
+                    { id: '2.3', text: 'Fehler oder Nacharbeit gingen zurück' },
+                    { id: '2.4', text: 'Budget und Zeitplan wurden eingehalten' },
+                    { id: '2.5', text: 'Betriebskosten sind tragbar und transparent' },
+                ],
+            },
+            {
+                id: 'c3',
+                title: '3. Nutzen für Bürgerinnen und Bürger',
+                weight: 20,
+                kpis: [
+                    { id: '3.1', text: 'Warte- und Durchlaufzeiten für Bürger wurden besser' },
+                    { id: '3.2', text: 'Servicequalität stieg, gemessen über Feedback oder Beschwerden' },
+                    { id: '3.3', text: 'Nutzungsrate des digitalen Angebots stieg' },
+                    { id: '3.4', text: 'Barrierefreiheit ist erfüllt' },
+                    { id: '3.5', text: 'Fairness, keine systematische Benachteiligung nachweisbar' },
+                ],
+            },
+            {
+                id: 'c4',
+                title: '4. Daten und KI Qualität',
+                weight: 15,
+                kpis: [
+                    { id: '4.1', text: 'Datenqualität ist definiert und wird überwacht' },
+                    { id: '4.2', text: 'Daten sind aktuell, Vollständigkeit ist akzeptabel' },
+                    { id: '4.3', text: 'Modellleistung ist messbar und ausreichend' },
+                    { id: '4.4', text: 'Ergebnisse sind fachlich plausibel und erklärbar' },
+                    { id: '4.5', text: 'Monitoring für Drift, Fehler, Bias ist aktiv' },
+                ],
+            },
+            {
+                id: 'c5',
+                title: '5. Recht, Datenschutz, IT Sicherheit',
+                weight: 20,
+                kpis: [
+                    { id: '5.1', text: 'Rechtsgrundlage dokumentiert' },
+                    { id: '5.2', text: 'DSGVO Prüfung, TOMs, Löschkonzept vorhanden' },
+                    { id: '5.3', text: 'DSFA durchgeführt falls nötig' },
+                    { id: '5.4', text: 'IT Sicherheitsanforderungen erfüllt, Audit oder Test' },
+                    { id: '5.5', text: 'Transparenz, Dokumentation, Nachvollziehbarkeit vorhanden' },
+                ],
+            },
+            {
+                id: 'c6',
+                title: '6. Akzeptanz und Organisation',
+                weight: 5,
+                kpis: [
+                    { id: '6.1', text: 'Mitarbeitende nutzen das System wirklich im Alltag' },
+                    { id: '6.2', text: 'Schulung und Change waren ausreichend' },
+                    { id: '6.3', text: 'Rollen, Zuständigkeiten, Support sind geklärt' },
+                ],
+            },
+            {
+                id: 'c7',
+                title: '7. Nachhaltigkeit und Wiederverwendbarkeit',
+                weight: 5,
+                kpis: [
+                    { id: '7.1', text: 'Betrieb und Wartung sind langfristig gesichert' },
+                    { id: '7.2', text: 'Lösung ist skalierbar und integrierbar' },
+                    { id: '7.3', text: 'Wiederverwendung für andere Bereiche ist realistisch' },
+                ],
+            },
+        ];
+
+        const RANKING_CONFIG = {
+            TOP: { label: 'TOP', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', description: 'Mehrwert klar, skalieren.', min: 240 },
+            GOOD: { label: 'GUT', color: 'text-blue-700 bg-blue-50 border-blue-200', description: 'Weiterführen, Optimierung einplanen.', min: 180 },
+            CRITICAL: { label: 'KRITISCH', color: 'text-amber-700 bg-amber-50 border-amber-200', description: 'Nur weiter mit klarer Nachsteuerung.', min: 120 },
+            FAILED: { label: 'NICHT ERFOLGREICH', color: 'text-red-700 bg-red-50 border-red-200', description: 'Stoppen oder neu aufsetzen.', min: 0 },
+        };
+
+        const SCALE_LABELS = { 0: 'Nicht erfüllt', 1: 'Teilweise', 2: 'Erfüllt', 3: 'Übertroffen' };
+
+        // --- Icons (SVG Paths) ---
+        const ICONS = {
+            Printer: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>',
+            Download: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>',
+            RotateCcw: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"></path><path d="M3 3v9h9"></path></svg>',
+            Loader2: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>',
+            ChevronDown: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>',
+            ChevronUp: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg>',
+            CheckCircle2: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+            Circle: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>',
+            XCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+            AlertCircle: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+            Star: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+            SmallStar: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+        };
+
+        // --- State Management ---
+        let appState = {
+            scores: {}, // mapped as {catId: {kpiId: val}}
+            openSectionId: 'c1', // or 'ALL' or null
+            isPdfLoading: false,
+        };
+
+        // Initialize state
+        CATEGORIES.forEach(cat => {
+            appState.scores[cat.id] = {};
+            cat.kpis.forEach(kpi => {
+                appState.scores[cat.id][kpi.id] = 0;
+            });
+        });
+        const initialScores = JSON.parse(JSON.stringify(appState.scores));
+
+        // --- Helper Components & Rendering ---
+
+        function renderIcon(name, customClass = "") {
+            // Simply replace width/height/class in string if needed, or just wrap in div
+            // A simple regex approach to inject class
+            let svg = ICONS[name] || '';
+            if (customClass) {
+                svg = svg.replace('<svg ', `<svg class="${customClass}" `);
+            }
+            return svg;
+        }
+
+        // --- Charts Implementation (SVG) ---
+
+        function renderGaugeChart(score, max) {
+            const percentage = Math.min(Math.max(score / max, 0), 1);
+            const radius = 80;
+            const cx = 100;
+            const cy = 100;
+            const startAngle = 180;
+            const endAngle = 180 + (percentage * 180);
+
+            // Convert polar to cartesian
+            const toRad = deg => (deg * Math.PI) / 180;
+            const x = cx + radius * Math.cos(toRad(endAngle));
+            const y = cy + radius * Math.sin(toRad(endAngle));
+
+            // Color logic
+            let color = '#ef4444';
+            if (score >= 120) color = '#f59e0b';
+            if (score >= 180) color = '#3b82f6';
+            if (score >= 240) color = '#10b981';
+
+            const dObj = score === 0
+                ? `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx - radius + 0.01} ${cy}` // tiny dot if 0
+                : `M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${x} ${y}`;
+
+            return `
+                <div class="relative h-48 w-full flex justify-center items-end overflow-hidden" aria-label="Gauge Chart">
+                    <svg viewBox="0 0 200 110" class="w-full h-full" overflow="visible">
+                        <!-- Background Arc -->
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="30" />
+                        <!-- Value Arc -->
+                        <path d="${dObj}" fill="none" stroke="${color}" stroke-width="30" />
+                    </svg>
+                    <div class="absolute bottom-0 text-center pb-4 flex flex-col items-center">
+                        <span class="text-4xl font-bold text-slate-800">${Math.round(score)}</span>
+                        <span class="text-xs text-slate-500 font-medium uppercase tracking-wider">Gesamtpunkte</span>
+                        <span class="text-xs text-slate-400">von ${max}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRadarChart(categoryScores) {
+            // SVG Radar Chart
+            // 7 Axes
+            const size = 200;
+            const center = size / 2;
+            const radius = 70;
+
+            // Calculate points
+            const points = categoryScores.map((cat, i) => {
+                const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2; // start top
+                const val = cat.percentage / 100;
+                const x = center + radius * val * Math.cos(angle);
+                const y = center + radius * val * Math.sin(angle);
+                return `${x},${y}`;
+            }).join(' ');
+
+            // Calculate grid (web)
+            const gridLevels = [1, 0.75, 0.5, 0.25];
+            const grids = gridLevels.map(level => {
+                const pts = Array.from({ length: 7 }).map((_, i) => {
+                    const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2;
+                    const r = radius * level;
+                    const x = center + r * Math.cos(angle);
+                    const y = center + r * Math.sin(angle);
+                    return `${x},${y}`;
+                }).join(' ');
+                return `<polygon points="${pts}" fill="none" stroke="#e2e8f0" stroke-width="1" />`;
+            }).join('');
+
+            // Labels
+            const labels = categoryScores.map((cat, i) => {
+                const angle = (Math.PI * 2 * i) / 7 - Math.PI / 2;
+                const r = radius + 20; // push label out
+                const x = center + r * Math.cos(angle);
+                const y = center + r * Math.sin(angle);
+                const anchor = x < center ? 'end' : (x > center ? 'start' : 'middle');
+                return `<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#64748b" font-size="8">${cat.id.replace('c', '')}</text>`;
+            }).join('');
+
+            return `
+                <div class="h-64 w-full flex justify-center items-center">
+                    <svg viewBox="0 0 ${size} ${size}" class="w-full h-full max-w-[250px]">
+                        ${grids}
+                        <polygon points="${points}" fill="#3b82f6" fill-opacity="0.6" stroke="#2563eb" stroke-width="2" />
+                        ${labels}
+                    </svg>
+                </div>
+            `;
+        }
+
+        function renderBarChart(kpis, scores, catId) {
+            // Simple HTML/CSS bars
+            const bars = kpis.map(kpi => {
+                const val = scores[catId]?.[kpi.id] || 0;
+                let colorClass = 'bg-red-500';
+                if (val === 1) colorClass = 'bg-amber-500';
+                if (val === 2) colorClass = 'bg-emerald-500';
+                if (val === 3) colorClass = 'bg-blue-500';
+
+                const heightPct = (val / 3) * 100;
+
+                return `
+                    <div class="flex flex-col items-center group relative cursor-help" style="width: 14%;">
+                        <div class="w-full bg-slate-100 rounded-t-sm relative h-32 flex items-end">
+                             <div style="height: ${heightPct}%;" class="w-full ${colorClass} rounded-t-sm transition-all"></div>
+                        </div>
+                        <span class="text-xs text-slate-500 mt-1 truncate w-full text-center">${kpi.id}</span>
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full mb-2 hidden group-hover:block z-20 w-48 bg-slate-800 text-white text-xs p-2 rounded shadow-xl">
+                            <p class="font-bold mb-1">${kpi.id}</p>
+                            <p class="mb-1">${kpi.text}</p>
+                            <p>Score: ${val}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `<div class="flex items-end justify-between h-40 w-full px-2">${bars}</div>`;
+        }
+
+        // --- Core Application Components ---
+
+        function renderKPIRow(kpi, value, catId) {
+            // Config for feedback
+            let iconKey = 'Circle';
+            let color = 'text-slate-400';
+            let bg = 'bg-slate-50';
+            let border = 'border-slate-200';
+
+            if (value === 0) { iconKey = 'XCircle'; color = 'text-red-700'; bg = 'bg-red-50'; border = 'border-red-200'; }
+            if (value === 1) { iconKey = 'AlertCircle'; color = 'text-amber-700'; bg = 'bg-amber-50'; border = 'border-amber-200'; }
+            if (value === 2) { iconKey = 'CheckCircle2'; color = 'text-emerald-700'; bg = 'bg-emerald-50'; border = 'border-emerald-200'; }
+            if (value === 3) { iconKey = 'Star'; color = 'text-blue-700'; bg = 'bg-blue-50'; border = 'border-blue-200'; }
+
+            // Score Buttons HTML
+            const buttonsHtml = [0, 1, 2, 3].map(score => {
+                const isActive = value === score;
+                const activeClass = isActive
+                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-black/5 font-bold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50';
+
+                return `
+                    <button 
+                        onclick="actions.setScore('${catId}', '${kpi.id}', ${score})"
+                        class="w-10 h-9 rounded-md text-sm font-medium transition-all ${activeClass}"
+                        title="${SCALE_LABELS[score]}">
+                        ${score}
+                    </button>
+                `;
+            }).join('');
+
+            return `
+            <div class="py-3 border-b border-slate-100 last:border-0 print:border-slate-200">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1 flex gap-3 items-start">
+                  <div class="${color} w-5 h-5 mt-0.5 shrink-0">${renderIcon(iconKey)}</div>
+                  <div>
+                    <p class="text-slate-800 text-sm md:text-base font-medium">${kpi.text}</p>
+                    <div class="mt-2 flex">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${bg} ${color} ${border}">
+                         ${renderIcon(iconKey === 'Star' ? 'SmallStar' : iconKey, 'w-3.5 h-3.5')}
+                         ${SCALE_LABELS[value]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex bg-slate-100 print:bg-transparent p-1 rounded-lg shrink-0 self-start md:self-center ml-8 md:ml-0 no-print" data-html2canvas-ignore="true">
+                   ${buttonsHtml}
+                </div>
+                <!-- Print Value -->
+                <div class="hidden print:block pdf-show-block text-sm font-bold border px-3 py-1 rounded bg-slate-50 min-w-[3rem] text-center shrink-0 self-center">
+                   ${value}
+                </div>
+              </div>
+            </div>
+            `;
+        }
+
+        function renderCategorySection(cat, scores, isOpen) {
+            const kpiScores = scores[cat.id] || {};
+            const answeredCount = cat.kpis.reduce((acc, kpi) => acc + (kpiScores[kpi.id] !== undefined ? 1 : 0), 0);
+            const isComplete = answeredCount === cat.kpis.length;
+
+            const headerIcon = isComplete
+                ? `<div class="text-emerald-500">${renderIcon('CheckCircle2', 'w-6 h-6')}</div>`
+                : `<div class="relative"><div class="text-slate-300">${renderIcon('Circle', 'w-6 h-6')}</div>${answeredCount > 0 ? `<span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-500">${answeredCount}</span>` : ''}</div>`;
+
+            const chevron = isOpen ? renderIcon('ChevronUp', 'w-5 h-5') : renderIcon('ChevronDown', 'w-5 h-5');
+            const contentDisplay = isOpen ? '' : 'hidden';
+
+            const kpisHtml = cat.kpis.map(kpi => renderKPIRow(kpi, kpiScores[kpi.id] || 0, cat.id)).join('');
+
+            return `
+            <div class="border border-slate-200 rounded-xl bg-white shadow-sm mb-4 print:mb-6 print:border-slate-300 print:shadow-none print-break-inside-avoid">
+                <button onclick="actions.toggleSection('${cat.id}')" class="w-full flex items-center justify-between p-5 bg-slate-50 hover:bg-slate-100 transition-colors text-left rounded-t-xl print:bg-slate-100" data-html2canvas-ignore="true">
+                    <div class="flex items-center gap-3">
+                        ${headerIcon}
+                        <div>
+                            <h3 class="font-semibold text-slate-800 text-lg">${cat.title}</h3>
+                            <p class="text-sm text-slate-600">Gewichtung: ${cat.weight}%</p>
+                        </div>
+                    </div>
+                    <div class="text-slate-400 no-print">${chevron}</div>
+                </button>
+                
+                <div class="${contentDisplay} p-5 border-t border-slate-100 print:border-slate-200 print:block">
+                    <div class="space-y-6 print:space-y-4">
+                        ${kpisHtml}
+                    </div>
+                    <!-- Chart Section -->
+                    <div class="mt-8 pt-6 border-t border-slate-100 print:break-inside-avoid">
+                         <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Score Übersicht</h4>
+                         ${renderBarChart(cat.kpis, scores, cat.id)}
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        function calculateResults() {
+            let totalScore = 0;
+            const categoryScores = CATEGORIES.map(cat => {
+                const kpiScores = appState.scores[cat.id] || {};
+                const rawScoreSum = cat.kpis.reduce((sum, kpi) => sum + (kpiScores[kpi.id] || 0), 0);
+                const kpiCount = cat.kpis.length;
+
+                const maxRawScore = kpiCount * 3;
+                const averageScore = kpiCount > 0 ? rawScoreSum / kpiCount : 0;
+                const weightedScore = averageScore * cat.weight;
+
+                totalScore += weightedScore;
+
+                return {
+                    id: cat.id,
+                    title: cat.title,
+                    score: weightedScore,
+                    maxPotential: 3 * cat.weight,
+                    percentage: maxRawScore > 0 ? (rawScoreSum / maxRawScore) * 100 : 0
+                };
+            });
+
+            let rank = 'FAILED';
+            if (totalScore >= RANKING_CONFIG.TOP.min) rank = 'TOP';
+            else if (totalScore >= RANKING_CONFIG.GOOD.min) rank = 'GOOD';
+            else if (totalScore >= RANKING_CONFIG.CRITICAL.min) rank = 'CRITICAL';
+
+            return { totalScore, maxScore: 300, rank, categoryScores };
+        }
+
+        // --- Main Render Function ---
+
+        function render() {
+            const root = document.getElementById('app');
+            const result = calculateResults();
+            const rankingInfo = RANKING_CONFIG[result.rank];
+
+            // Render Categories
+            const categoriesHtml = CATEGORIES.map(cat =>
+                renderCategorySection(cat, appState.scores, appState.openSectionId === 'ALL' || appState.openSectionId === cat.id)
+            ).join('');
+
+            // Detailed Breakdown Table (Hidden unless print/pdf)
+            const detailsHtml = `
+            <section class="hidden print:block pdf-show-block mt-8 print-break-inside-avoid">
+                 <div class="p-6 bg-white border border-slate-200 rounded-xl">
+                    <h2 class="text-xl font-bold mb-4 text-slate-800">Ergebnis Details</h2>
+                    <table class="w-full text-sm text-left">
+                      <thead>
+                        <tr class="border-b border-slate-300">
+                          <th class="py-2 font-semibold text-slate-800">Bereich</th>
+                          <th class="py-2 text-right font-semibold text-slate-800">Gewicht</th>
+                          <th class="py-2 text-right font-semibold text-slate-800">Score</th>
+                          <th class="py-2 text-right font-semibold text-slate-800">Max</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${result.categoryScores.map(c => `
+                          <tr class="border-b border-slate-100">
+                            <td class="py-2 text-slate-800">${c.title}</td>
+                            <td class="py-2 text-right text-slate-700">${CATEGORIES.find(cat => cat.id === c.id)?.weight}%</td>
+                            <td class="py-2 text-right font-mono font-medium text-slate-900">${c.score.toFixed(1)}</td>
+                            <td class="py-2 text-right text-slate-500 font-mono">${c.maxPotential}</td>
+                          </tr>
+                        `).join('')}
+                        <tr class="font-bold border-t border-slate-300 bg-slate-50">
+                          <td class="py-3 pl-2 text-slate-900">Gesamt</td>
+                          <td class="py-3 text-right">100%</td>
+                          <td class="py-3 text-right text-blue-700">${result.totalScore.toFixed(1)}</td>
+                          <td class="py-3 text-right pr-2 text-slate-900">300</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                 </div>
+            </section>
+            `;
+
+            root.innerHTML = `
+              <div id="report-content">
+                <!-- Header -->
+                <header class="bg-slate-900 text-white pt-10 pb-24 px-4 shadow-lg print:shadow-none print:pb-6 print:pt-6 print:bg-white print:text-black">
+                  <div class="max-w-4xl mx-auto">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <h1 class="text-3xl font-bold mb-2">AI & Data Impact Analyst</h1>
+                        <p class="text-slate-300 print:text-slate-600 max-w-xl text-base">
+                          Professionelles Bewertungstool für KI- und Datenprojekte. 
+                          Evaluieren Sie Erfolg anhand von Datenqualität, KI-Ethik, Effizienz und operativem Nutzen.
+                        </p>
+                      </div>
+                      
+                      <!-- Actions -->
+                      <div class="flex gap-2 no-print" data-html2canvas-ignore="true">
+                        <button onclick="actions.reset()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors" title="Reset">
+                           ${renderIcon('RotateCcw', 'w-5 h-5')} <span class="hidden sm:inline">Reset</span>
+                        </button>
+                        <button onclick="actions.print()" class="p-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition-colors" title="Drucken">
+                           ${renderIcon('Printer', 'w-5 h-5')}
+                        </button>
+                        <button onclick="actions.downloadPDF()" id="btn-pdf" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-white transition-colors" title="PDF">
+                           ${appState.isPdfLoading ? renderIcon('Loader2', 'w-5 h-5') : renderIcon('Download', 'w-5 h-5')}
+                           <span class="hidden sm:inline">PDF Speichern</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </header>
+
+                <main class="max-w-4xl mx-auto px-4 -mt-16 space-y-8" role="main">
+                  <!-- Dashboard Card -->
+                  <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-slate-100 flex flex-col md:flex-row gap-8 items-center justify-between print:shadow-none print:border-2 print:border-slate-800 print-break-inside-avoid">
+                      <!-- Gauge -->
+                      <div class="w-full md:w-1/3 flex flex-col items-center">
+                         ${renderGaugeChart(result.totalScore, result.maxScore)}
+                         <div class="mt-4 px-4 py-2 rounded-full border text-sm font-bold tracking-wide ${rankingInfo.color}">
+                           ${rankingInfo.label}
+                         </div>
+                      </div>
+
+                      <!-- Text -->
+                      <div class="w-full md:w-1/3 text-center md:text-left">
+                        <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Bewertung</h3>
+                        <p class="text-xl font-medium text-slate-800 mb-2">${result.totalScore.toFixed(1)} / 300 Punkte</p>
+                        <p class="text-slate-700 leading-relaxed text-sm">${rankingInfo.description}</p>
+                      </div>
+
+                      <!-- Radar -->
+                      <div class="w-full md:w-1/3 flex flex-col items-center">
+                         ${renderRadarChart(result.categoryScores)}
+                         <p class="text-xs text-slate-500 mt-2">Dimensions-Balance</p>
+                      </div>
+                  </section>
+
+                  <!-- Checklist -->
+                  <section class="space-y-4 print:space-y-8">
+                      <div class="flex items-center justify-between no-print" data-html2canvas-ignore="true">
+                          <h2 class="text-xl font-bold text-slate-800">Checkliste</h2>
+                          <span class="text-sm text-slate-600">Skala: 0 (Nicht erfüllt) bis 3 (Übertroffen)</span>
+                      </div>
+                      ${categoriesHtml}
+                  </section>
+
+                  ${detailsHtml}
+                </main>
+
+                <!-- Footer -->
+                <footer class="max-w-4xl mx-auto px-4 py-12 text-center text-slate-500 text-sm print:py-6">
+                    <p>&copy; ${new Date().getFullYear()} Created by AI, Ertan Özcan</p>
+                </footer>
+              </div>
+
+              <!-- Mobile Sticky Footer -->
+              <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-lg z-50 flex justify-between items-center no-print" data-html2canvas-ignore="true">
+                  <div>
+                    <span class="text-xs text-slate-600 block">Gesamtpunkte</span>
+                    <span class="font-bold text-lg text-slate-900">${Math.round(result.totalScore)} <span class="text-slate-500 text-sm">/ 300</span></span>
+                  </div>
+                   <div class="px-3 py-1 rounded-full text-xs font-bold ${rankingInfo.color}">
+                      ${rankingInfo.label}
+                   </div>
+              </div>
+            `;
+        }
+
+        // --- Actions Object ---
+        const actions = {
+            setScore: (catId, kpiId, val) => {
+                appState.scores[catId][kpiId] = val;
+                render();
+            },
+            toggleSection: (catId) => {
+                if (appState.openSectionId === catId) {
+                    appState.openSectionId = null;
+                } else {
+                    appState.openSectionId = catId;
+                }
+                render();
+            },
+            reset: () => {
+                if (confirm('Wollen Sie wirklich alle Bewertungen zurücksetzen?')) {
+                    appState.scores = JSON.parse(JSON.stringify(initialScores));
+                    appState.openSectionId = CATEGORIES[0].id;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    render();
+                }
+            },
+            print: async () => {
+                const prev = appState.openSectionId;
+                appState.openSectionId = 'ALL';
+                render();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                window.print();
+                appState.openSectionId = prev;
+                render();
+            },
+            downloadPDF: async () => {
+                appState.isPdfLoading = true;
+                const prev = appState.openSectionId;
+                appState.openSectionId = 'ALL';
+                render();
+
+                const element = document.getElementById('report-content');
+                const opt = {
+                    margin: [10, 10, 15, 10],
+                    filename: `AI-Data-Impact-Report-${new Date().toISOString().split('T')[0]}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                try {
+                    await html2pdf().set(opt).from(element).save();
+                } catch (e) {
+                    console.error(e);
+                    alert('Fehler beim PDF.');
+                } finally {
+                    appState.isPdfLoading = false;
+                    appState.openSectionId = prev;
+                    render();
+                }
+            }
+        };
+
+        // Expose to global scope for inline event handlers
+        window.actions = actions;
+
+        // Initial Render
+        render();
+
+    </script>
+</body>
+
+</html>
